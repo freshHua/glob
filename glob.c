@@ -72,6 +72,10 @@
 
 #include "charclass.h"
 
+#ifndef _PW_BUF_LEN
+#define _PW_BUF_LEN 256
+#endif
+
 #define	DOLLAR		'$'
 #define	DOT		'.'
 #define	EOS		'\0'
@@ -377,7 +381,7 @@ globtilde(const Char *pattern, Char *patbuf, size_t patbuf_len, glob_t *pglob)
 		 * handle a plain ~ or ~/ by expanding $HOME
 		 * first and then trying the password file
 		 */
-		if (issetugid() != 0 || (h = getenv("HOME")) == NULL) {
+		if ((h = getenv("HOME")) == NULL) {
 			getpwuid_r(getuid(), &pwstore, pwbuf, sizeof(pwbuf),
 			    &pwd);
 			if (pwd == NULL)
@@ -814,7 +818,7 @@ globextend(const Char *path, glob_t *pglob, struct glob_lim *limitp,
 		return(GLOB_NOSPACE);
 	}
 
-	pathv = reallocarray(pglob->gl_pathv, newn, sizeof(*pathv));
+	pathv = realloc(pglob->gl_pathv, newn*sizeof(*pathv));
 	if (pathv == NULL)
 		goto nospace;
 	if (pglob->gl_pathv == NULL && pglob->gl_offs > 0) {
@@ -826,7 +830,7 @@ globextend(const Char *path, glob_t *pglob, struct glob_lim *limitp,
 	pglob->gl_pathv = pathv;
 
 	if ((pglob->gl_flags & GLOB_KEEPSTAT) != 0) {
-		statv = reallocarray(pglob->gl_statv, newn, sizeof(*statv));
+		statv = realloc(pglob->gl_statv, newn*sizeof(*statv));
 		if (statv == NULL)
 			goto nospace;
 		if (pglob->gl_statv == NULL && pglob->gl_offs > 0) {
